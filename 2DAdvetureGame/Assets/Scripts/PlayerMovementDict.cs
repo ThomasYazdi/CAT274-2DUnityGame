@@ -1,17 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovementDict : MonoBehaviour
 {
-    public static PlayerMovement Instance;
+    public static PlayerMovementDict Instance;
+
+    public DialogueManager DialogueManager;
 
     public GameObject player;
     public float Speed = 1f;
 
-    public List<string> myInventory;
+    public Dictionary<string, int> myInventoryDict = new Dictionary<string, int>();
 
-    public bool InventoryFull = false;
+    public TextMeshProUGUI inventoryDisplay;
 
     private void Awake()
     {
@@ -26,9 +31,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Start is called before the first frame update
     void Start()
     {
-
+        DisplayInventory();
     }
 
     // Update is called once per frame
@@ -57,16 +63,6 @@ public class PlayerMovement : MonoBehaviour
             //Debug.Log("D Pressed");
             player.transform.position += Vector3.right * Speed;
         }
-
-        if (myInventory.Count >= 3)
-        {
-            InventoryFull = true;
-        }
-
-        if (myInventory.Count < 3)
-        {
-            InventoryFull = false;
-        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -74,17 +70,23 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.tag == "Enemy")
         {
             Destroy(player);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
 
+        if (collision.gameObject.tag == "Key")
+        {
+            DisplayInventory();
+            DialogueManager.currentIndex = 1;
+            Destroy(gameObject);
+        }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void DisplayInventory()
     {
-        Debug.Log("Entered trigger");
-    }
-
-    public void addItem(string item)
-    {
-        myInventory.Add(item);
+        inventoryDisplay.text = "";
+        foreach (var item in myInventoryDict)
+        {
+            inventoryDisplay.text += item.Key + ", Quantity: " + item.Value + "\n";
+        }
     }
 }
